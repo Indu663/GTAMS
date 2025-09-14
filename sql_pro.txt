@@ -1,0 +1,304 @@
+CREATE DATABASE
+
+mysql> CREATE DATABASE gtams;
+Query OK, 1 row affected (0.02 sec)
+
+mysql> USE gtams;
+Database changed
+
+CREATE TABLES
+
+mysql> CREATE TABLE customers(
+    -> customer_id INT AUTO_INCREMENT PRIMARY KEY, 
+    -> name VARCHAR(50), 
+    -> email VARCHAR(50) UNIQUE, 
+    -> phone VARCHAR(10), 
+    -> country VARCHAR(50));
+Query OK, 0 rows affected (0.11 sec)
+
+
+mysql> CREATE TABLE suppliers(
+    -> supplier_id INT AUTO_INCREMENT PRIMARY KEY,
+    -> name VARCHAR(50), 
+    -> type ENUM('AIRLINE','HOTEL'), 
+    -> country VARCHAR(50));
+Query OK, 0 rows affected (0.06 sec)
+
+
+mysql> CREATE TABLE flights(
+    -> flight_id INT AUTO_INCREMENT PRIMARY KEY, 
+    -> supplier_id INT, 
+    -> flight_number VARCHAR(20), 
+    -> origin VARCHAR(50), 
+    -> destination VARCHAR(50), 
+    -> departure_time DATETIME, 
+    -> arrival_time DATETIME, 
+    -> FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id));
+Query OK, 0 rows affected (0.09 sec)
+
+
+mysql> CREATE TABLE hotels(
+    -> hotel_id INT AUTO_INCREMENT PRIMARY KEY, 
+    -> supplier_id INT, 
+    -> name VARCHAR(20), 
+    -> city VARCHAR(20), 
+    -> country VARCHAR(20), 
+    -> FOREIGN KEY (supplier_id) REFERENCES suppliers(supplier_id));
+Query OK, 0 rows affected (0.09 sec)
+
+
+mysql> CREATE TABLE  bookings(
+    -> booking_id INT AUTO_INCREMENT PRIMARY KEY, 
+    -> customer_id INT, 
+    -> booking_date DATE, 
+    -> start_date DATE, 
+    -> end_date DATE, 
+    -> status ENUM('CONFIRMED','CANCELLED','PENDING'), 
+    -> FOREIGN KEY (customer_id) REFERENCES customers(customer_id));
+Query OK, 0 rows affected (0.09 sec)
+
+
+mysql> CREATE TABLE booking_flights(
+    -> booking_id INT, 
+    -> flight_id INT, 
+    -> PRIMARY KEY(booking_id,flight_id), 
+    -> FOREIGN KEY(booking_id) REFERENCES bookings(booking_id), 
+    -> FOREIGN KEY (flight_id) REFERENCES flights(flight_id));
+Query OK, 0 rows affected (0.09 sec)
+
+
+mysql>  CREATE TABLE booking_hotels(
+    -> booking_id INT, hotel_id INT, 
+    -> check_in DATE, 
+    -> check_out DATE, 
+    -> PRIMARY KEY(booking_id,hotel_id),
+    -> FOREIGN KEY(booking_id) REFERENCES bookings(booking_id), 
+    -> FOREIGN KEY(hotel_id) REFERENCES hotels(hotel_id)
+    -> );
+Query OK, 0 rows affected (0.08 sec)
+
+
+mysql> CREATE TABLE payments(
+    -> payment_id INT AUTO_INCREMENT PRIMARY KEY, 
+    -> booking_id INT, 
+    -> amount DECIMAL(10,2), 
+    -> currency VARCHAR(10), 
+    -> payment_date DATE, 
+    -> FOREIGN KEY (booking_id) REFERENCES bookings(booking_id));
+Query OK, 0 rows affected (0.08 sec)
+
+
+INSERT DATA
+
+mysql> INSERT INTO customers (name, email, phone, country)
+    -> VALUES
+    -> ('Lahari','lahari5@gmail.com','7416251014','INDIA'),
+    -> ('Sahithi','sahithi2@gmail.com','9390708902','USA');
+Query OK, 2 rows affected (0.03 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+
+mysql> SELECT * FROM customers;
++-------------+---------+--------------------+------------+---------+
+| customer_id | name    | email              | phone      | country |
++-------------+---------+--------------------+------------+---------+
+|           1 | Lahari  | lahari5@gmail.com  | 7416251014 | INDIA   |
+|           2 | Sahithi | sahithi2@gmail.com | 9390708902 | USA     |
++-------------+---------+--------------------+------------+---------+
+2 rows in set (0.03 sec)
+
+
+mysql> INSERT INTO suppliers(name,type,country) 
+    -> VALUES 
+    -> ('Indigo Airlines','AIRLINE','India'),
+    -> ('Taj Hotels','HOTEL','India'),
+    -> ('Delta Airlines','AIRLINE','USA'),
+    -> ('Micke Hotels','HOTEL','USA');
+Query OK, 4 rows affected (0.03 sec)
+Records: 4  Duplicates: 0  Warnings: 0
+
+
+mysql> SELECT * FROM suppliers;
++-------------+-----------------+---------+---------+
+| supplier_id | name            | type    | country |
++-------------+-----------------+---------+---------+
+|           1 | Indigo Airlines | AIRLINE | India   |
+|           2 | Taj Hotels      | HOTEL   | India   |
+|           3 | Delta Airlines  | AIRLINE | USA     |
+|           4 | Micke Hotels    | HOTEL   | USA     |
++-------------+-----------------+---------+---------+
+4 rows in set (0.00 sec)
+
+
+mysql> INSERT INTO flights(supplier_id,flight_number,origin,destination,departure_time,arrival_time)
+    -> VALUES 
+    -> (1,'6F999','Delhi','Mumbai','2025-09-10 09:00:00','2025-09-10 11:00:00'),
+    -> (3,'DL100','New York','Chicago','2025-09-12 08:00:00','2025-09-12 10:30:00');
+Query OK, 2 rows affected (0.04 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+
+mysql> select * from flights;
++-----------+-------------+---------------+----------+-------------+---------------------+---------------------+
+| flight_id | supplier_id | flight_number | origin   | destination | departure_time      | arrival_time        |
++-----------+-------------+---------------+----------+-------------+---------------------+---------------------+
+|         1 |           1 | 6F999         | Delhi    | Mumbai      | 2025-09-10 09:00:00 | 2025-09-10 11:00:00 |
+|         2 |           3 | DL100         | New York | Chicago     | 2025-09-12 08:00:00 | 2025-09-12 10:30:00 |
++-----------+-------------+---------------+----------+-------------+---------------------+---------------------+
+2 rows in set (0.00 sec)
+
+mysql> INSERT INTO hotels(supplier_id,name,city,country) 
+    -> VALUES 
+    -> (2,'Taj Hotels','Mumbai','India'),
+    -> (4,'Micke Hotels','Chicago','USA');
+Query OK, 2 rows affected (0.03 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM hotels;
++----------+-------------+--------------+---------+---------+
+| hotel_id | supplier_id | name         | city    | country |
++----------+-------------+--------------+---------+---------+
+|        1 |           2 | Taj Hotels   | Mumbai  | India   |
+|        2 |           4 | Micke Hotels | Chicago | USA     |
++----------+-------------+--------------+---------+---------+
+2 rows in set (0.00 sec)
+
+mysql> INSERT INTO bookings (customer_id, booking_date, start_date, end_date, status)
+    -> VALUES
+    -> (1,'2025-09-01','2025-09-10','2025-09-15','CONFIRMED');
+Query OK, 1 row affected (0.03 sec)
+
+mysql> SELECT * FROM bookings;
++------------+-------------+--------------+------------+------------+-----------+
+| booking_id | customer_id | booking_date | start_date | end_date   | status    |
++------------+-------------+--------------+------------+------------+-----------+
+|          1 |           1 | 2025-09-01   | 2025-09-10 | 2025-09-15 | CONFIRMED |
++------------+-------------+--------------+------------+------------+-----------+
+1 row in set (0.00 sec)
+
+mysql> INSERT INTO booking_flights(booking_id,flight_id)
+    -> VALUES(1,1);
+Query OK, 1 row affected (0.03 sec)
+
+mysql> SELECT * FROM booking_flights;
++------------+-----------+
+| booking_id | flight_id |
++------------+-----------+
+|          1 |         1 |
++------------+-----------+
+1 row in set (0.02 sec)
+
+mysql> INSERT INTO booking_hotels(booking_id,hotel_id,check_in,check_out)
+    -> VALUES(1,1,'2025-09-10','2025-09-12');
+Query OK, 1 row affected (0.03 sec)
+
+mysql> SELECT * FROM booking_hotels;
++------------+----------+------------+------------+
+| booking_id | hotel_id | check_in   | check_out  |
++------------+----------+------------+------------+
+|          1 |        1 | 2025-09-10 | 2025-09-12 |
++------------+----------+------------+------------+
+
+mysql> INSERT INTO payments(booking_id,amount,currency,payment_date)
+    -> VALUES (1,20000,'INR','2025-09-01');
+Query OK, 1 row affected (0.03 sec)
+
+mysql> SELECT * FROM payments;
++------------+------------+----------+----------+--------------+
+| payment_id | booking_id | amount   | currency | payment_date |
++------------+------------+----------+----------+--------------+
+|          1 |          1 | 20000.00 | INR      | 2025-09-01   |
++------------+------------+----------+----------+--------------+
+1 row in set (0.00 sec)
+
+
+RUN QUERIES
+
+
+mysql> SELECT name,city
+    -> FROM hotels
+    -> WHERE country= 'India';
++------------+--------+
+| name       | city   |
++------------+--------+
+| Taj Hotels | Mumbai |
++------------+--------+
+1 row in set (0.00 sec)
+
+
+mysql> SELECT flight_number,origin,destination
+    -> FROM flights
+    -> WHERE origin='Delhi';
++---------------+--------+-------------+
+| flight_number | origin | destination |
++---------------+--------+-------------+
+| 6F999         | Delhi  | Mumbai      |
++---------------+--------+-------------+
+1 row in set (0.00 sec)
+
+
+mysql> SELECT SUM(amount) AS total_revenue
+    -> FROM payments;
++---------------+
+| total_revenue |
++---------------+
+|      20000.00 |
++---------------+
+1 row in set (0.03 sec)
+
+
+mysql> SELECT c.name,b.booking_id,f.flight_number,f.origin,f.destination,f.departure_time, f.arrival_time,h.name AS hotel_name, bh.check_in,bh.check_out
+    -> FROM bookings b
+    -> JOIN customers c ON b.customer_id=c.customer_id
+    -> LEFT JOIN booking_flights bf ON b.booking_id=bf.booking_id
+    -> LEFT JOIN flights f ON bf.flight_id=f.flight_id
+    -> LEFT JOIN booking_hotels bh ON b.booking_id=bh.booking_id
+    -> LEFT JOIN hotels h ON bh.hotel_id=h.hotel_id
+    -> WHERE b.booking_id=1;
++--------+------------+---------------+--------+-------------+---------------------+---------------------+------------+------------+------------+
+| name   | booking_id | flight_number | origin | destination | departure_time      | arrival_time        | hotel_name | check_in   | check_out  |
++--------+------------+---------------+--------+-------------+---------------------+---------------------+------------+------------+------------+
+| Lahari |          1 | 6F999         | Delhi  | Mumbai      | 2025-09-10 09:00:00 | 2025-09-10 11:00:00 | Taj Hotels | 2025-09-10 | 2025-09-12 |
++--------+------------+---------------+--------+-------------+---------------------+---------------------+------------+------------+------------+
+1 row in set (0.04 sec)
+
+
+mysql> SELECT MONTH(booking_date) AS month, COUNT(*) AS total_bookings
+    -> FROM bookings
+    -> GROUP BY MONTH(booking_date);
++-------+----------------+
+| month | total_bookings |
++-------+----------------+
+|     9 |              1 |
++-------+----------------+
+1 row in set (0.03 sec)
+
+
+mysql> SELECT s.name, s.type, COUNT(b.booking_id) AS total_bookings, SUM(p.amount) AS total_revenue
+    -> FROM suppliers s
+    -> JOIN flights f ON f.supplier_id = s.supplier_id
+    -> JOIN booking_flights bf ON f.flight_id = bf.flight_id
+    -> JOIN bookings b ON b.booking_id = bf.booking_id
+    -> JOIN payments p ON b.booking_id = p.booking_id
+    -> GROUP BY s.supplier_id;
++-----------------+---------+----------------+---------------+
+| name            | type    | total_bookings | total_revenue |
++-----------------+---------+----------------+---------------+
+| Indigo Airlines | AIRLINE |              1 |      20000.00 |
++-----------------+---------+----------------+---------------+
+1 row in set (0.03 sec)
+
+
+mysql> SELECT p.payment_id, p.amount, p.currency,
+    -> CASE
+    -> WHEN p.currency = 'INR' THEN p.amount
+    -> WHEN p.currency = 'USD' THEN p.amount*83
+    -> ELSE p.amount
+    -> END AS amount_in_inr
+    -> FROM payments p;
++------------+----------+----------+---------------+
+| payment_id | amount   | currency | amount_in_inr |
++------------+----------+----------+---------------+
+|          1 | 20000.00 | INR      |      20000.00 |
++------------+----------+----------+---------------+
+1 row in set (0.00 sec)
